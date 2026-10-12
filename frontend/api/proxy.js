@@ -2,15 +2,19 @@ const BACKEND_ORIGIN = 'https://ev-dashboard-backend.onrender.com';
 
 module.exports = async (request, response) => {
   const requestUrl = new URL(request.url || '/', 'https://vercel.invalid');
-  const requestedPath = request.query?.path;
+  const queryPath = request.query?.path ?? requestUrl.searchParams.get('path');
+  const requestedPath = Array.isArray(queryPath) ? queryPath.join('/') : queryPath;
+  const apiPath = typeof requestedPath === 'string'
+    ? requestedPath.replace(/^\/?api\//, '')
+    : '';
 
-  if (typeof requestedPath !== 'string' || !requestedPath.startsWith('/api/')) {
+  if (!apiPath || apiPath === requestedPath) {
     response.statusCode = 400;
     response.end('Invalid API path');
     return;
   }
 
-  const pathSegments = requestedPath.slice(5).split('/');
+  const pathSegments = apiPath.split('/');
   if (!pathSegments.length || pathSegments.some(segment => !segment || segment === '.' || segment === '..')) {
     response.statusCode = 400;
     response.end('Invalid API path');

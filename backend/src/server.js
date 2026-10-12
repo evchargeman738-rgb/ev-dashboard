@@ -65,8 +65,8 @@ app.use(
 
             // Allow Vercel deployments belonging to this project
             const isVercelDeployment =
-                /^https:\/\/frontend-[a-z0-9-]+-gowthamis-projects-9db3e52a\.vercel\.app$/
-                    .test(origin);
+                /^https:\/\/frontend-[a-z0-9-]+-gowthamis-projects-9db3e52a\.vercel\.app$/.test(origin) ||
+                /^https:\/\/ev-dashboard-vmro(?:-[a-z0-9]+(?:-[a-z0-9]+)*)?\.vercel\.app$/.test(origin);
 
             if (isVercelDeployment) {
                 return callback(null, true);

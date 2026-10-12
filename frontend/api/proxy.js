@@ -2,10 +2,29 @@ const BACKEND_ORIGIN = 'https://ev-dashboard-backend.onrender.com';
 
 module.exports = async (request, response) => {
   const requestUrl = new URL(request.url || '/', 'https://vercel.invalid');
-  if (!requestUrl.pathname.startsWith('/api/')) {
-    response.statusCode = 404;
-    response.end('Not found');
+  const requestedPath = request.query?.path;
+
+  if (typeof requestedPath !== 'string' || !requestedPath.trim()) {
+    response.statusCode = 400;
+    response.end('Missing API path');
     return;
+  }
+
+  const pathSegments = requestedPath.split('/');
+  if (pathSegments.some(segment => !segment || segment === '.' || segment === '..')) {
+    response.statusCode = 400;
+    response.end('Invalid API path');
+    return;
+  }
+
+  const backendUrl = new URL(
+    `/api/${pathSegments.map(encodeURIComponent).join('/')}`,
+    BACKEND_ORIGIN
+  );
+  for (const [name, value] of requestUrl.searchParams) {
+    if (name !== 'path') {
+      backendUrl.searchParams.append(name, value);
+    }
   }
 
   const headers = new Headers();
@@ -26,14 +45,11 @@ module.exports = async (request, response) => {
   }
 
   try {
-    const backendResponse = await fetch(
-      `${BACKEND_ORIGIN}${requestUrl.pathname}${requestUrl.search}`,
-      {
-        method: request.method,
-        headers,
-        body
-      }
-    );
+    const backendResponse = await fetch(backendUrl, {
+      method: request.method,
+      headers,
+      body
+    });
 
     response.statusCode = backendResponse.status;
     backendResponse.headers.forEach((value, name) => {

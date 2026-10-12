@@ -4,14 +4,14 @@ module.exports = async (request, response) => {
   const requestUrl = new URL(request.url || '/', 'https://vercel.invalid');
   const requestedPath = request.query?.path;
 
-  if (typeof requestedPath !== 'string' || !requestedPath.trim()) {
+  if (typeof requestedPath !== 'string' || !requestedPath.startsWith('/api/')) {
     response.statusCode = 400;
-    response.end('Missing API path');
+    response.end('Invalid API path');
     return;
   }
 
-  const pathSegments = requestedPath.split('/');
-  if (pathSegments.some(segment => !segment || segment === '.' || segment === '..')) {
+  const pathSegments = requestedPath.slice(5).split('/');
+  if (!pathSegments.length || pathSegments.some(segment => !segment || segment === '.' || segment === '..')) {
     response.statusCode = 400;
     response.end('Invalid API path');
     return;

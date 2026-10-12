@@ -42,6 +42,7 @@ const allowedOrigins = new Set([
 
     // Vercel main deployment
     "https://frontend-git-main-gowthamis-projects-9db3e52a.vercel.app",
+    "https://ev-dashboard-vmro.vercel.app",
 
     // Local development
     "http://localhost:4200",
